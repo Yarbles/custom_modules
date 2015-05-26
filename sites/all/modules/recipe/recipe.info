@@ -1,0 +1,5 @@
+name = Recipe
+description = Does some stuff
+package = Epicodus Classwork
+core = 7.x
+files[] = recipe.module

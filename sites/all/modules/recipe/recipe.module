@@ -1,0 +1,17 @@
+<?php
+
+    function recipe_form_alter(&$form, &$form_state, $form_id) {
+        print_r($form_id);
+        if ($form_id == 'recipe_name_node_form'){
+            print '<pre>';
+            print_r($form);
+            print '</pre>';
+
+            $form['menu']['#type'] = 'hidden';
+            $form['revision_information']['#type'] = 'hidden';
+            $form['comment_settings']['#type'] = 'hidden';
+            $form['author']['#type'] = 'hidden';
+            $form['options']['#type'] = 'hidden';
+            $form['comment_settings']['comment']['#default_value'] = 1;
+        }
+    }

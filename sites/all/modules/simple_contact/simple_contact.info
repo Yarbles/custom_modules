@@ -1,0 +1,5 @@
+name = Simple Contact Form
+description = Removes the subject line and 'send yourself a copy' options from the contact form
+package = Reid and Connor's awesome package
+core = 7.x
+files[] = simple_contact.module

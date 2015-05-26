@@ -1,0 +1,15 @@
+<?php
+
+    function simple_contact_form_alter(&$form, &$form_state, $form_id) {
+        if ($form_id == 'contact_site_form') {
+            // print '<pre>';
+            // print_r($form);
+            // print '</pre>';
+
+            // $form['copy']['#type'] = 'hidden';
+            // $form['subject']['#type'] = 'hidden';
+            $form['subject']['#default_value'] = 'Feedback';
+            $form['copy']['#default_value'] = 1;
+        }
+
+        }
