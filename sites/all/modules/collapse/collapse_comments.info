@@ -1,0 +1,8 @@
+name = Collapse Comments
+description = "Add a 'Hide/Show' button to comment wrappers."
+core = 7.x
+package = Other
+
+
+
+files[] = module_filter.module

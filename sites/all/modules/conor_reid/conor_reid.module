@@ -1,0 +1,13 @@
+<?php
+
+    function conor_reid_follow_networks_alter(&$networks, $uid = 0) {
+        $networks[$uid]['imdb'] = array(
+    'title' => t('IMDB'),
+    'domain' => 'imdb.com',
+  );
+
+  $networks[$uid]['drupal'] = array(
+    'title' => t('Drupal.org'),
+    'domain' => 'drupal.org',
+  );
+    }

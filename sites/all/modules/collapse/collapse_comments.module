@@ -1,0 +1,146 @@
+<?php
+
+/**
+ * @file
+ * Add a hide/show button to comment threads, dependant on AJAX Comments.
+ * 
+ * NOTE: This module only creates the new field!!!
+ * It must me themed using comment.tpl.php to place it correctly!!!
+ * No settings have been made for this module, so any changes to display must be done manually through /js/collapse.js
+ * 
+ * If you would like to contribute to this module, please feel free. This is functionality that I feel should have
+ * come in the box with Drupal 7, and my knowledge of the framework is very little, so any expansion is better than
+ * what I could do solo.
+ */
+ 
+ /* Add the JS and CSS files - Placeholders for future versions */
+ function collapse_comments_init() {
+  drupal_add_js(drupal_get_path('module', 'collapse_comments') .'/js/collapse.js');
+  drupal_add_css(drupal_get_path('module', 'collapse_comments') . '/css/collapse.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+ }
+
+ /* Create the new field "collapse" */
+ function collapse_comments_field_extra_fields() {
+  $extra['comment']['comment']['display']['collapse'] = array(
+    'label' => t('collapse'),
+    'description' => t('collapse'),
+    'weight' => -10,
+  );
+  return $extra;
+}
+
+/**
+ * Implements hook_comment_view().
+ * Force the new field to be displayed on any comments
+ */
+function collapse_comments_comment_view($comment, $view_mode, $langcode) {
+
+	$comment->content['collapse'] = array(
+      '#markup' => '<a class="collapse-comment-trigger" id="collapse-comment-trigger-' . $comment->cid . '" onclick="collapse_comment(' . $comment->cid . ');">[-]</a>',
+    );
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * The following two calls are on in effect if the module "AJAX Comments" is not installed and enabled.
+ * AJAX Comments provides the comment wrapping for you, so it doesn't need to be done a second time.
+ */
+
+
+
+/**
+ * Implements hook_comment_view_alter().
+ * Wrap comments and their replies in a #comment-wrapper-(cid) div
+ */
+function collapse_comments_comment_view_alter(&$build, $view_mode) {
+  if (module_exists('ajax_comments') == false) {
+	  $comment = $build['#comment'];
+	  $node = $build['#node'];
+
+	  $prefix = '';
+
+	  // Close any previous wrapper elements.
+	  if ($comment->wrappers_to_close > 0) {
+		$prefix .= str_repeat('</div>', $comment->wrappers_to_close);
+	  }
+
+	  // Add 'new' anchor if needed.
+	  if (!empty($comment->first_new)) {
+		$prefix .= "<a id=\"new\"></a>\n";
+	  }
+
+	  // Add wrapper tag.
+	  $indent = $comment->pid != 0 && variable_get('comment_default_mode_' . $node->type, COMMENT_MODE_THREADED) == COMMENT_MODE_THREADED;
+	  $prefix .= '<div class="comment-wrapper' . ($indent == TRUE ? ' indented' : '') . '" id="comment-wrapper-' . $comment->cid . '">';
+
+	  // Add anchor tag.
+	  $prefix .= "<a id=\"comment-$comment->cid\"></a>\n";
+
+	  $build['#prefix'] = $prefix;
+
+	  // Close last wrapper element.
+	  if (!empty($comment->final_wrappers_to_close)) {
+		$build['#suffix'] = str_repeat('</div>', $comment->final_wrappers_to_close);
+	  }
+  }
+}
+
+/**
+ * Prepares entity view.
+ */
+function collapse_comments_entity_prepare_view($entities, $entity_type, $langcode) {
+  if (module_exists('ajax_comments') == false) {
+	  if ($entity_type == 'comment') {
+		$i = 0;
+		$opened = 0;
+
+		foreach ($entities as $id => $entity) {
+
+		  $depth = isset($entity->thread) ? count(explode('.', $entity->thread)) - 1 : 0;
+
+		  $entity->wrappers_to_close = 0;
+
+		  if ($depth > $opened) {
+			$opened++;
+		  }
+		  else {
+			$entity->wrappers_to_close = ($depth == $opened)? 1 : ($opened - $depth)+1;
+
+			while ($depth < $opened) {
+			  $opened--;
+			}
+		  }
+		  // This is a very poor hack to get user pictures to show up. Alternatives
+		  // gladly accepted.
+		  if (isset($entity->form_build_id)) {
+			if (isset($entity->uid) && theme_get_setting('toggle_comment_user_picture')) {
+			  $result = db_select('users', 'u')
+					 ->fields('u', array('picture'))
+					 ->condition('uid', $entity->uid, '=')
+					 ->execute()
+					 ->fetchAssoc();
+			  $entity->picture = isset($result['picture']) ? $result['picture'] : '';
+			}
+		  }
+
+		  $i++;
+		}
+
+		$entities[$id]->final_wrappers_to_close = $opened;
+	  }
+  }
+}
+
+?>

@@ -1,0 +1,5 @@
+name = Follow Extender
+description = Extends follow module
+package = Conor and Reid's package
+core = 7.x
+files[] = conor_reid.module
